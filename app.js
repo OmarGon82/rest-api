@@ -3,21 +3,13 @@
 // load modules
 const express = require('express');
 const morgan = require('morgan');
-const db = require('./db/fsjstd-restapi.db');
-const { Users, Course } = db.models;
+const db = require('./models/index');
 
-console.log({Users})
+  // test 
+  db.authenticate()
+    .then(() => console.log('The connection was successful'))
+    .catch(err => console.error('Error: ', error))
 
-
-//test Sequelize
-  // (async () => {
-  //   try {
-  //     await models.sequelize.authenticate();
-  //     console.log("The connect was successful!")
-  //   } catch (error) {
-  //     console.error("There was an error connecting: ", error)
-  //   }
-  // }) ();
 
 // variable to enable global error logging
 const enableGlobalErrorLogging = process.env.ENABLE_GLOBAL_ERROR_LOGGING === 'true';
