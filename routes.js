@@ -21,10 +21,7 @@ function handleAsync(cb) {
 }
 
    router.get('/users', handleAsync(async (req, res) => {
-       const users = await User.findAll({
-           attribues: ['id']
-       })
-       res.json(users.map(user => user.get({ plain: true})));
+            res.json({User})
    }));
 
  module.exports = router;

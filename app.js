@@ -16,6 +16,9 @@ console.log('Testing the connection to the database...');
     // Test the connection to the database
     await sequelize.authenticate();
     console.log('Connection to the database successful!');
+    await sequelize.sync();
+    console.log('Database successfully synced!');
+
   } catch (error) {
     console.log(error)
   }
