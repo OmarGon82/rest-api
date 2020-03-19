@@ -14,10 +14,10 @@ console.log('Testing the connection to the database...');
 (async () => {
   try {
     // Test the connection to the database
-    await sequelize.authenticate();
     console.log('Connection to the database successful!');
-    await sequelize.sync();
+    await sequelize.authenticate();
     console.log('Database successfully synced!');
+    await sequelize.sync();
 
   } catch (error) {
     console.log(error)
