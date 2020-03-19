@@ -1,11 +1,3 @@
-// Course
-// id (Integer, primary key, auto-generated)
-// userId (id from the Users table)
-// title (String)
-// description (Text)
-// estimatedTime (String, nullable)
-// materialsNeeded (String, nullable)
-
 const Sequelize = require('sequelize');
 
 module.exports = (sequelize) => {
@@ -49,14 +41,14 @@ module.exports = (sequelize) => {
             allowNull: true
         }
     }, { sequelize });
-    Course.associate = (models) => {
-        Course.belongsTo(models.Users, {
-            as: 'user',
-            foreignKey: {
-                fieldName
-            }
-        })
-    };
+    // Course.associate = (models) => {
+    //     Course.belongsTo(models.Users, {
+    //         as: 'user',
+    //         foreignKey: {
+    //             fieldName
+    //         }
+    //     })
+    // };
 
     return Course;
 };

@@ -3,13 +3,14 @@
 // load modules
 const express = require('express');
 const morgan = require('morgan');
-const db = require('./models/index');
 
-  // test 
-  db.authenticate()
-    .then(() => console.log('The connection was successful'))
-    .catch(err => console.error('Error: ', error))
+const sequelize = require('./models').sequelize;
 
+console.log('Testing the connection to the database...');
+sequelize
+  .authenticate()
+  .then(() => console.log('Connection successful!'))
+  .catch(error => console.log(error))
 
 // variable to enable global error logging
 const enableGlobalErrorLogging = process.env.ENABLE_GLOBAL_ERROR_LOGGING === 'true';
@@ -21,6 +22,8 @@ const app = express();
 app.use(morgan('dev'));
 
 // TODO setup your api routes here  
+// app.use('/user', require('./routes/user'))
+
 
 // setup a friendly greeting for the root route
 app.get('/', (req, res) => {
