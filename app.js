@@ -7,10 +7,17 @@ const morgan = require('morgan');
 const sequelize = require('./models').sequelize;
 
 console.log('Testing the connection to the database...');
-sequelize
-  .authenticate()
-  .then(() => console.log('Connection successful!'))
-  .catch(error => console.log(error))
+(async () => {
+  try {
+    // Test the connection to the database
+    await sequelize.authenticate();
+    console.log('Connection to the database successful!');
+  } catch (error) {
+    console.log(error)
+  }
+ })();
+
+
 
 // variable to enable global error logging
 const enableGlobalErrorLogging = process.env.ENABLE_GLOBAL_ERROR_LOGGING === 'true';
