@@ -41,14 +41,16 @@ module.exports = (sequelize) => {
             allowNull: true
         }
     }, { sequelize });
-    // Course.associate = (models) => {
-    //     Course.belongsTo(models.Users, {
-    //         as: 'user',
-    //         foreignKey: {
-    //             fieldName
-    //         }
-    //     })
-    // };
+    Course.associate = (models) => {
+        Course.belongsTo(models.User, {
+        as: 'user',
+        foreignKey: {
+            fieldName: "userId",
+            field: 'userId',
+            allowNull: false,
+        }
+        })
+    };
 
     return Course;
 };
