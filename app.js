@@ -21,6 +21,7 @@ console.log('Testing the connection to the database...');
 
   } catch (error) {
     const errors = error.errors.map(err => err.message);
+    console.log(errors)
   }
  })();
 
