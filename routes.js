@@ -1,8 +1,11 @@
 'use strict';
 
 const express =  require('express');
-const { sequelize, models } = require('./models');
-const { User, Course } = ('./models');
+const models = require('./models');
+const User = models.User;
+const Course = models.Course;
+
+
 
 // router
 const router = express.Router();
@@ -21,7 +24,14 @@ function handleAsync(cb) {
 }
 
    router.get('/users', handleAsync(async (req, res) => {
-            res.json({User})
+    const users = await User.findAll({
+        attributes: ['id', 'firstName']
+    });
+    res.json(users.map(user=> user.get({ plain: true })));
    }));
+
+
+  
+
 
  module.exports = router;

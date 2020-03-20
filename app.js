@@ -20,7 +20,7 @@ console.log('Testing the connection to the database...');
     await sequelize.sync();
 
   } catch (error) {
-    console.log(error)
+    const errors = error.errors.map(err => err.message);
   }
  })();
 
