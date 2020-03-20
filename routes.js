@@ -44,9 +44,6 @@ function handleAsync(cb) {
     * Post route to validate All users
     */
    router.post('/users', [
-    check('name')
-        .exists({ checkFalsy:  true, checkNull: true })
-        .withMessage('Please provide a value for "name"'),
     check('firstName')
         .exists({ checkFalsy: true, checkNull: true})
         .withMessage('Please provide a value for "firstName"'),
