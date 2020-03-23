@@ -12,68 +12,115 @@ const { User, Course } = require('./models')
 // Import: methods from express-validator
 const {check, validationResult } = require('express-validator')
 
-// Import: bcrypts module;
+// Import: authentication modules;
 const bcryptjs = require('bcryptjs');
+const auth = require('basic-auth');
 
 
 /**
  * Middleware function to wrap each route in a try catch block
  * @param {callback function} cb 
  */
-function handleAsync(cb) {
-    return async(req, res, next) => {
-        try{
-            await cb(req, res, next)
-        } catch(error) {
-            //passes the error to global error handler
-            next(error)   
+    function handleAsync(cb) {
+        return async(req, res, next) => {
+            try{
+                await cb(req, res, next)
+            } catch(error) {
+                //passes the error to global error handler
+                next(error)   
+            }
         }
     }
-}
+
+
+/**
+ *  Middleware function to authenticate users
+ * @param {  req, res, next }
+ */
+    const authenticateUser  = handleAsync( async (req, res, next) => {
+        let message = null; 
+
+        // Parse users credentials from Authentication header
+        const credentials = auth(req);
+
+        // If users credentials exist
+        if (credentials) {
+            // Attempt to get the user from the db
+            // by their email address (would be most unique way other than by pk, which the user wouldn't know)
+            const users = await User.findAll()
+            const user = users.find(user => user.emailAddress === credentials.name)
+            // console.log(credentials.name)
+            if(user) {
+                // Use bcrypt compare the entered pw with the db pw
+                const authenticated = bcryptjs.compareSync(credentials.pass, user.password);
+
+                // If the pws match then 
+                if (authenticated) {
+                    // store the the retrieved user object on the req object so the next middleware has access to it
+                    req.currentUser = user;
+
+                } else {
+                    message = `Authentication failure for username: ${user.emailAddress}`;
+                }
+            } else {
+                message = `User not found for username: ${credentials.name}`;
+            }
+        } else {
+            message = `Auth header not found`;
+        }
+
+        // If user authentication failed...
+        if (message) {
+            console.warn(message);
+            //Return a response with a 401 Unauthorized HTTP status code.
+            res.status(401).json({ message: 'Access Denied' });
+        } else {
+            // Or if the authentication was successful
+            next();
+        }  
+    });
+
+    // Route that returns the current authenticated user.
+    router.get('/users', authenticateUser, handleAsync(async (req, res) => {
+        const user = req.currentUser;
+  
+        res.json({
+            id: user.id,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            emailAddress: user.emailAddress,
+        });
+    }));
+
     /**
      * GET route to get all the users information from the database
      */
-    router.get('/users', 
-    // [
-    //     check('firstName')
-    //         .exists({ checkFalsy: true, checkNull: true})
-    //         .withMessage('Please provide a value for "firstName"'),
-    //     check('lastName')
-    //         .exists({ checkFalsy: true, checkNull: true})
-    //         .withMessage('Please provide a value for "lastName"'),
-    //     check('emailAddress')
-    //         .exists({ checkFalsy: true, checkNull: true})
-    //         .withMessage('Please provide a value for "emailAddress"'),
-    //     check('password')
-    //         .exists({ checkFalsy: true, checkNull: true})
-    //         .withMessage('Please provide a value for "password"'),
-    //    ],
-        handleAsync(async (req, res) => {
+    // router.get('/users', authenticateuser, handleAsync(async (req, res) => {
               
-        // Attempt to get the validation  result from the Request  object.
-        const errors = validationResult(req)
+    //     // Attempt to get the validation  result from the Request  object.
+    //     const errors = validationResult(req)
     
-        /**
-         * isEmpty returns true if there are no errors so to check if there are errors we use !(NOT operator)
-         * If there are validation errors
-         */
-        if (!errors.isEmpty()) {
-            const errorMessage = errors.array().map(error => error.msg);
+    //     /**
+    //      * isEmpty returns true if there are no errors so to check if there are errors we use !(NOT operator)
+    //      * If there are validation errors
+    //      */
+    //     if (!errors.isEmpty()) {
+    //         const errorMessage = errors.array().map(error => error.msg);
     
-            // return the error to the client
-            return res.status(400).json({ errors: errorMessage})
-        }
+    //         // return the error to the client
+    //         return res.status(400).json({ errors: errorMessage})
+    //     }
     
-        // Get user from the request body.
-        const users = await User.findAll();
+    //     // Get user from the request body.
+    //     const users = await User.findAll();
 
-        // // Hash the new user's password.
-        // user.password = bcryptjs.hashSync(user.password);
+    //     // // Hash the new user's password.
+    //     user.password = bcryptjs.hashSync(user.password);
 
-        res.json(users.map(user=> user.get({ plain: true })))
-        res.status(201).end();
+    //     res.json(users.map(user=> user.get({ plain: true })))
+    //     res.status(201).end();
            
-       }));
+    //    }));
 
    /**
     * Post route to create a new User
