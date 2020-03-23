@@ -218,17 +218,29 @@ router.put('/courses/:id',[
     .withMessage('Please provide a value for "description"'),
 
  ], handleAsync(async (req,res) => {
-    const course = await Course.findByPk(req.params.id);
-    if(course) {
-        course.title = req.body.title;
-        course.description = req.body.description;
 
-        await course.save();
-        //with status 204 we don't usually send back json but we can use .end() to let end the request.
-        res.status(204).end();
+        // Attempt get validation result from req obj
+    const errors = validationResult(req);
+    const course = await Course.findByPk(req.params.id);
+    
+    if (!errors.isEmpty()) {
+        const errorMessage = errors.array().map( error => error.msg);
+        
+        // return the error to the client
+        return res.status(400).json({ errors: errorMessage})
     } else {
-        res.status(404).json({ message: "Course not found" })
-    }  
+
+        if(course) {
+            course.title = req.body.title;
+            course.description = req.body.description;
+    
+            await course.save();
+            //with status 204 we don't usually send back json but we can use .end() to let end the request.
+            res.status(204).end();
+        } else {
+            res.status(404).json({ message: "Course not found" })
+        }  
+    }
 }));
 
 /**
