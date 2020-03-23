@@ -152,7 +152,7 @@ const auth = require('basic-auth');
 // }));
 
 /**
- *  Course GET: gets a list of all the coureses and who owns each course.
+ *  Course GET: Gets a list of all the coureses and users who owns each course.
  */
 router.get('/courses', handleAsync(async (req, res) => {
 const courses = await Course.findAll();
@@ -160,7 +160,7 @@ res.json(courses.map(course=> course.get({ plain: true })));
 }));
 
 /**
- * Course POST: Creates a new post
+ * Course GET: Gets a single course and the user who owns that course.
  */
 router.get('/courses/:id', handleAsync(async (req,res) => {
     try {
@@ -176,6 +176,9 @@ router.get('/courses/:id', handleAsync(async (req,res) => {
     }
 }));
 
+/**
+ * Course POST: Creates a new post
+ */
 
  router.post('/courses', [
     check('title')
@@ -199,8 +202,23 @@ router.get('/courses/:id', handleAsync(async (req,res) => {
         const course = req.body;
         await Course.create(course)
         console.log("Course successfully created!")
-        res.status(201).location('/').end();
+        res.status(201).location('/course').end();
     }
  }));
 
- module.exports = router;
+//  PUT /api/courses/:id 204 - Updates a course and returns no content
+router.put('/courses/:id', handleAsync(async (req,res) => {
+    const course = await Course.findByPk(req.params.id);
+    if(course) {
+        course.title = req.body.title;
+        course.description = req.body.description;
+
+        await course.save();
+        //with status 204 we don't usually send back json but we can use .end() to let end the request.
+        res.status(204).end();
+    } else {
+        res.status(404).json({ message: "Course not found" })
+    }  
+}));
+
+module.exports = router;
