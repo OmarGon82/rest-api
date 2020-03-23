@@ -206,7 +206,9 @@ router.get('/courses/:id', handleAsync(async (req,res) => {
     }
  }));
 
-//  PUT /api/courses/:id 204 - Updates a course and returns no content
+/**
+ * Course PUT: Put route to update an existing course
+ */
 router.put('/courses/:id', handleAsync(async (req,res) => {
     const course = await Course.findByPk(req.params.id);
     if(course) {
@@ -219,6 +221,17 @@ router.put('/courses/:id', handleAsync(async (req,res) => {
     } else {
         res.status(404).json({ message: "Course not found" })
     }  
+}));
+
+// DELETE /api/courses/:id 204 - Deletes a course and returns no content
+router.delete('/courses/:id', handleAsync(async (req, res, next) => {
+    const course = await Course.findByPk(req.params.id);
+    if (course) {
+        await course.destroy();
+        res.status(204).end();
+    } else {
+        res.status(404).json({ message: "Course not found" })
+    }
 }));
 
 module.exports = router;
