@@ -223,7 +223,9 @@ router.put('/courses/:id', handleAsync(async (req,res) => {
     }  
 }));
 
-// DELETE /api/courses/:id 204 - Deletes a course and returns no content
+/**
+ * Course DELETE: Delete route to delete an existing course
+ */
 router.delete('/courses/:id', handleAsync(async (req, res, next) => {
     const course = await Course.findByPk(req.params.id);
     if (course) {
