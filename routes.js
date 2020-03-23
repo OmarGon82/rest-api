@@ -209,7 +209,15 @@ router.get('/courses/:id', handleAsync(async (req,res) => {
 /**
  * Course PUT: Put route to update an existing course
  */
-router.put('/courses/:id', handleAsync(async (req,res) => {
+router.put('/courses/:id',[
+    check('title')
+    .exists({ checkFalsy: true, checkNull: true})
+    .withMessage('Please provide a value for "title"'),
+    check('description')
+    .exists({ checkFalsy: true, checkNull: true})
+    .withMessage('Please provide a value for "description"'),
+
+ ], handleAsync(async (req,res) => {
     const course = await Course.findByPk(req.params.id);
     if(course) {
         course.title = req.body.title;
