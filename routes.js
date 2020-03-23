@@ -92,36 +92,6 @@ const auth = require('basic-auth');
         });
     }));
 
-    /**
-     * GET route to get all the users information from the database
-     */
-    // router.get('/users', authenticateuser, handleAsync(async (req, res) => {
-              
-    //     // Attempt to get the validation  result from the Request  object.
-    //     const errors = validationResult(req)
-    
-    //     /**
-    //      * isEmpty returns true if there are no errors so to check if there are errors we use !(NOT operator)
-    //      * If there are validation errors
-    //      */
-    //     if (!errors.isEmpty()) {
-    //         const errorMessage = errors.array().map(error => error.msg);
-    
-    //         // return the error to the client
-    //         return res.status(400).json({ errors: errorMessage})
-    //     }
-    
-    //     // Get user from the request body.
-    //     const users = await User.findAll();
-
-    //     // // Hash the new user's password.
-    //     user.password = bcryptjs.hashSync(user.password);
-
-    //     res.json(users.map(user=> user.get({ plain: true })))
-    //     res.status(201).end();
-           
-    //    }));
-
    /**
     * Post route to create a new User
     */
@@ -160,7 +130,7 @@ const auth = require('basic-auth');
         // Hash the new user's password.
         user.password = bcryptjs.hashSync(user.password);
         await User.create(user)
-        console.log("user successfully created!")
+        console.log("User successfully created!")
         res.status(201).location('/').end();
     }     
 }));
@@ -181,13 +151,56 @@ const auth = require('basic-auth');
 
 // }));
 
-   router.get('/courses', handleAsync(async (req, res) => {
-    const courses = await Course.findAll();
-    res.json(courses.map(course=> course.get({ plain: true })));
-   }));
+/**
+ *  Course GET: gets a list of all the coureses and who owns each course.
+ */
+router.get('/courses', handleAsync(async (req, res) => {
+const courses = await Course.findAll();
+res.json(courses.map(course=> course.get({ plain: true })));
+}));
+
+/**
+ * Course POST: Creates a new post
+ */
+router.get('/courses/:id', handleAsync(async (req,res) => {
+    try {
+        const course = await Course.findByPk(req.params.id);
+        if(course) {
+           res.json(course);
+           res.status(201).end();
+        } else {
+            res.status(404).json({ message: "Sorry that course does not exist" })
+        }
+    } catch (error) {
+        res.status(500).json({ message: error.message })
+    }
+}));
 
 
-  
+ router.post('/courses', [
+    check('title')
+    .exists({ checkFalsy: true, checkNull: true})
+    .withMessage('Please provide a value for "title"'),
+    check('description')
+    .exists({ checkFalsy: true, checkNull: true})
+    .withMessage('Please provide a value for "description"'),
 
+ ], handleAsync(async (req, res) => {
+
+    // Attempt get validation result from req obj
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+        const errorMessage = errors.array().map( error => error.msg);
+        
+        // return the error to the client
+        return res.status(400).json({ errors: errorMessage})
+    } else {
+        const course = req.body;
+        await Course.create(course)
+        console.log("Course successfully created!")
+        res.status(201).location('/').end();
+    }
+ }));
 
  module.exports = router;
