@@ -199,10 +199,10 @@ router.get('/courses/:id', handleAsync(async (req,res) => {
         // return the error to the client
         return res.status(400).json({ errors: errorMessage})
     } else {
-        const course = req.body;
-        await Course.create(course)
+        // const course = req.body;
+        const course = await Course.create(req.body)
         console.log("Course successfully created!")
-        res.status(201).location('/course').end();
+        res.status(201).location(`/courses/${course .id}`).json(course);
     }
  }));
 
