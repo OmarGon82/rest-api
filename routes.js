@@ -39,17 +39,14 @@ const auth = require('basic-auth');
  */
     const authenticateUser  = handleAsync( async (req, res, next) => {
         let message = null; 
-
         // Parse users credentials from Authentication header
         const credentials = auth(req);
-
         // If users credentials exist
         if (credentials) {
             // Attempt to get the user from the db
             // by their email address (would be most unique way other than by pk, which the user wouldn't know)
             const users = await User.findAll()
             const user = users.find(user => user.emailAddress === credentials.name)
-            // console.log(credentials.name)
             if(user) {
                 // Use bcrypt compare the entered pw with the db pw
                 const authenticated = bcryptjs.compareSync(credentials.pass, user.password);
@@ -95,7 +92,7 @@ const auth = require('basic-auth');
    /**
     * Post route to create a new User
     */
-   router.post('/users', 
+   router.post('/users',  authenticateUser, 
    [
     check('firstName')
         .exists({ checkFalsy: true, checkNull: true})
@@ -104,12 +101,20 @@ const auth = require('basic-auth');
         .exists({ checkFalsy: true, checkNull: true})
         .withMessage('Please provide a value for "lastName"'),
     check('emailAddress')
+        .isEmail()
+        .withMessage('Please enter a valid email address')
         .exists({ checkFalsy: true, checkNull: true})
-        .withMessage('Please provide a value for "emailAddress"'),
+        .withMessage('Please provide a value for "emailAddress"')
+        .custom(email => {
+            const user = User.findAll({ where: { emailAddress: email }})
+            if (user) {
+               throw new Error ('E-mail already in use');
+            };
+        }),
     check('password')
         .exists({ checkFalsy: true, checkNull: true})
         .withMessage('Please provide a value for "password"'),
-   ], 
+   ],
    handleAsync(async (req, res) => {
           
     // Attempt to get the validation  result from the Request  object.
