@@ -164,7 +164,16 @@ res.json(courses.map(course=> course.get({ plain: true })));
  */
 router.get('/courses/:id', handleAsync(async (req,res) => {
     try {
-        const course = await Course.findByPk(req.params.id);
+        const course = await Course.findOne ({
+            where: { id: req.params.id},
+            include : [
+                {
+                model: User,
+                as: 'user',
+                attributes: [ 'id',  'firstName', 'lastName', 'emailAddress']
+                }
+            ]
+        });
         if(course) {
            res.json(course);
            res.status(201).end();
