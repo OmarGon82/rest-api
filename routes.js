@@ -92,7 +92,7 @@ const auth = require('basic-auth');
    /**
     * Post route to create a new User
     */
-   router.post('/users',  authenticateUser, 
+   router.post('/users',
    [
     check('firstName')
         .exists({ checkFalsy: true, checkNull: true})
