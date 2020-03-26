@@ -108,6 +108,7 @@ const auth = require('basic-auth');
         .custom(email => {
             const user = User.findAll({ where: { emailAddress: email }})
             if (user) {
+                console.log(user)
                throw new Error ('E-mail already in use');
             };
         }),
@@ -216,7 +217,7 @@ router.get('/courses/:id', handleAsync(async (req,res) => {
         // const course = req.body;
         const course = await Course.create(req.body)
         console.log("Course successfully created!")
-        res.status(201).location(`/courses/${course .id}`).json(course);
+        res.status(201).location(`/courses/${course .id}`).json();
     }
  }));
 
@@ -264,7 +265,7 @@ router.delete('/courses/:id', handleAsync(async (req, res, next) => {
     const course = await Course.findByPk(req.params.id);
     if (course) {
         await course.destroy();
-        res.status(204).end();
+        res.status(401).end();
     } else {
         res.status(404).json({ message: "Course not found" })
     }
