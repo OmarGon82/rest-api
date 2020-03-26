@@ -251,8 +251,8 @@ router.put('/courses/:id',[
         // return the error to the client
         return res.status(400).json({ errors: errorMessage})
     } else {
-        console.log("course owner id",course.userId)
-        console.log("logged in user id",user.id)
+        // console.log("course owner id",course.userId)
+        // console.log("logged in user id",user.id)
         if(course.userId !== user.id) {
             res.status(403).json({ message: "Current user doesn't own the requested course" })
         } else if (course) {
@@ -271,9 +271,12 @@ router.put('/courses/:id',[
 /**
  * Course DELETE: Delete route to delete an existing course
  */
-router.delete('/courses/:id', handleAsync(async (req, res, next) => {
+router.delete('/courses/:id', authenticateUser, handleAsync(async (req, res, next) => {
+    const user = req.currentUser;
     const course = await Course.findByPk(req.params.id);
-    if (course) {
+    if(course.userId !== user.id) {
+        res.status(403).json({ message: "Current user doesn't own the requested course" })
+    } else if (course) {
         await course.destroy();
         res.status(401).end();
     } else {
