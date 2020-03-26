@@ -104,14 +104,7 @@ const auth = require('basic-auth');
         .isEmail()
         .withMessage('Please enter a valid email address')
         .exists({ checkFalsy: true, checkNull: true})
-        .withMessage('Please provide a value for "emailAddress"')
-        .custom(email => {
-            const user = User.findAll({ where: { emailAddress: email }})
-            if (user) {
-                console.log(user)
-               throw new Error ('E-mail already in use');
-            };
-        }),
+        .withMessage('Please provide a value for "emailAddress"'),
     check('password')
         .exists({ checkFalsy: true, checkNull: true})
         .withMessage('Please provide a value for "password"'),
@@ -126,8 +119,9 @@ const auth = require('basic-auth');
      * If there are validation errors
      */
     if (!errors.isEmpty()) {
-        const errorMessage = errors.array().map(error => error.msg);
 
+        const errorMessage = errors.array().map(error => error.msg);
+  
         // return the error to the client
         return res.status(400).json({ errors: errorMessage})
     } else {
@@ -142,20 +136,20 @@ const auth = require('basic-auth');
 }));
 
 //send a DELETE request to /user/:id to DELETE a user.
-// router.delete("/users/:id", handleAsync( async(req, res, next) => {
-//     const user = await User.findByPk(req.params.id);
-//     if(user) {
-//         await User.destroy({
-//             where: {
-//                 id: user.id
-//             }
-//         })
-//         res.status(204).end();
-//     } else {
-//         res.status(404).json({message: "user not found"})
-//     }
+router.delete("/users/:id", handleAsync( async(req, res, next) => {
+    const user = await User.findByPk(req.params.id);
+    if(user) {
+        await User.destroy({
+            where: {
+                id: user.id
+            }
+        })
+        res.status(204).end();
+    } else {
+        res.status(404).json({message: "user not found"})
+    }
 
-// }));
+}));
 
 /**
  *  Course GET: Gets a list of all the coureses and users who owns each course.

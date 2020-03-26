@@ -7,7 +7,7 @@ module.exports = (sequelize) => {
     User.init({
         id: {
             type: Sequelize.INTEGER,
-            primaryKey: true,
+            primaryKey: true,   
             autoIncrement: true,
         },
         firstName: {
@@ -37,7 +37,15 @@ module.exports = (sequelize) => {
         emailAddress: {
             type: Sequelize.STRING,
             allowNull: false,
+            unique: {
+                args: true,
+                msg: 'Email address entered is already in use.'
+            },
             validate: {
+                isEmail: {
+                    args: true,
+                    msg: 'Please enter a valid email address'
+                },
                 notNull: {
                     msg: 'You must input a value for "emailAddress"',
                 },
