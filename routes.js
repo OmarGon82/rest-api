@@ -152,10 +152,24 @@ router.delete("/users/:id", handleAsync( async(req, res, next) => {
 }));
 
 /**
+ * Course Routing Below
+ * 
+ */
+
+
+/**
  *  Course GET: Gets a list of all the coureses and users who owns each course.
  */
 router.get('/courses', handleAsync(async (req, res) => {
-const courses = await Course.findAll();
+const courses = await Course.findAll({
+    include : [
+        {
+            model: User,
+            as: 'user',
+            attributes: ['id', 'firstName', 'lastName', 'emailAddress']
+        }
+    ]
+});
 res.json(courses.map(course=> course.get({ plain: true })));
 }));
 
@@ -187,7 +201,7 @@ router.get('/courses/:id', handleAsync(async (req,res) => {
 
 /**
  * Course POST: Creates a new post
- */
+*/
 
  router.post('/courses', [
     check('title')
@@ -208,7 +222,6 @@ router.get('/courses/:id', handleAsync(async (req,res) => {
         // return the error to the client
         return res.status(400).json({ errors: errorMessage})
     } else {
-        // const course = req.body;
         const course = await Course.create(req.body)
         console.log("Course successfully created!")
         res.status(201).location(`/courses/${course .id}`).json();
@@ -226,25 +239,28 @@ router.put('/courses/:id',[
     .exists({ checkFalsy: true, checkNull: true})
     .withMessage('Please provide a value for "description"'),
 
- ], handleAsync(async (req,res) => {
+ ],authenticateUser, handleAsync(async (req,res) => {
 
         // Attempt get validation result from req obj
     const errors = validationResult(req);
     const course = await Course.findByPk(req.params.id);
-    
+    const user = req.currentUser;
     if (!errors.isEmpty()) {
         const errorMessage = errors.array().map( error => error.msg);
         
         // return the error to the client
         return res.status(400).json({ errors: errorMessage})
     } else {
-
-        if(course) {
+        console.log("course owner id",course.userId)
+        console.log("logged in user id",user.id)
+        if(course.userId !== user.id) {
+            res.status(403).json({ message: "Current user doesn't own the requested course" })
+        } else if (course) {
             course.title = req.body.title;
             course.description = req.body.description;
     
             await course.save();
-            //with status 204 we don't usually send back json but we can use .end() to let end the request.
+            //with status 204 we don't usually send back json but we can use .end() to end the request.
             res.status(204).end();
         } else {
             res.status(404).json({ message: "Course not found" })
