@@ -162,12 +162,14 @@ router.delete("/users/:id", handleAsync( async(req, res, next) => {
  */
 router.get('/courses', handleAsync(async (req, res) => {
 const courses = await Course.findAll({
+    attributes: ['id', 'title', 'description', "estimatedTime", "materialsNeeded"],
     include : [
         {
             model: User,
             as: 'user',
             attributes: ['id', 'firstName', 'lastName', 'emailAddress']
-        }
+        },
+
     ]
 });
 res.json(courses.map(course=> course.get({ plain: true })));
