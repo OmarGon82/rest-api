@@ -215,6 +215,7 @@ router.get('/courses/:id', handleAsync(async (req,res) => {
     .withMessage('Please provide a value for "description"'),
 
  ],authenticateUser, handleAsync(async (req, res) => {
+     // Get the Id of the logged in user
     const user = req.currentUser;
     // Attempt get validation result from req obj
     const errors = validationResult(req);
@@ -224,12 +225,12 @@ router.get('/courses/:id', handleAsync(async (req,res) => {
         // return the error to the client
         return res.status(400).json({ errors: errorMessage})
     } else {
-        if(!user.id) {
+        if(parseInt(req.body.userId) === user.id) {
+            const course = await Course.create(req.body)
+             console.log("Course successfully created!")
+             res.status(201).location(`/courses/${course.id}`).json();
+        } else {
             return res.status(401).json({ message: "Access Denied"})
-        } else if (req.body) {
-           const course = await Course.create(req.body)
-            console.log("Course successfully created!")
-            res.status(201).location(`/courses/${course.id}`).json();
         } 
     }
  }));
