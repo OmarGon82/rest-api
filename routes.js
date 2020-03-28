@@ -182,6 +182,7 @@ router.get('/courses/:id', handleAsync(async (req,res) => {
     try {
         const course = await Course.findOne ({
             where: { id: req.params.id},
+            attributes: ['id', 'title', 'description', "estimatedTime", "materialsNeeded"],
             include : [
                 {
                 model: User,
@@ -213,20 +214,23 @@ router.get('/courses/:id', handleAsync(async (req,res) => {
     .exists({ checkFalsy: true, checkNull: true})
     .withMessage('Please provide a value for "description"'),
 
- ], handleAsync(async (req, res) => {
-
+ ],authenticateUser, handleAsync(async (req, res) => {
+    const user = req.currentUser;
     // Attempt get validation result from req obj
     const errors = validationResult(req);
-
     if (!errors.isEmpty()) {
         const errorMessage = errors.array().map( error => error.msg);
         
         // return the error to the client
         return res.status(400).json({ errors: errorMessage})
     } else {
-        const course = await Course.create(req.body)
-        console.log("Course successfully created!")
-        res.status(201).location(`/courses/${course .id}`).json();
+        if(!user.id) {
+            return res.status(401).json({ message: "Access Denied"})
+        } else if (req.body) {
+           const course = await Course.create(req.body)
+            console.log("Course successfully created!")
+            res.status(201).location(`/courses/${course.id}`).json();
+        } 
     }
  }));
 
@@ -253,8 +257,6 @@ router.put('/courses/:id',[
         // return the error to the client
         return res.status(400).json({ errors: errorMessage})
     } else {
-        // console.log("course owner id",course.userId)
-        // console.log("logged in user id",user.id)
         if(course.userId !== user.id) {
             res.status(403).json({ message: "Current user doesn't own the requested course" })
         } else if (course) {
@@ -280,7 +282,7 @@ router.delete('/courses/:id', authenticateUser, handleAsync(async (req, res, nex
         res.status(403).json({ message: "Current user doesn't own the requested course" })
     } else if (course) {
         await course.destroy();
-        res.status(401).end();
+        res.status(204).end();
     } else {
         res.status(404).json({ message: "Course not found" })
     }
