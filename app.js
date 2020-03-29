@@ -9,13 +9,14 @@ const routes = require('./routes');
 //Setting up and testing Sequelize
 const sequelize = require('./models').sequelize;
 
-
+// Test the connection to the database
 console.log('Testing the connection to the database...');
 (async () => {
   try {
-    // Test the connection to the database
+    
     console.log('Connection to the database successful!');
     await sequelize.authenticate();
+    // Syncing the datebase.
     console.log('Database successfully synced!');
     await sequelize.sync();
 

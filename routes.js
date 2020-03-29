@@ -39,8 +39,10 @@ const auth = require('basic-auth');
  */
     const authenticateUser  = handleAsync( async (req, res, next) => {
         let message = null; 
+
         // Parse users credentials from Authentication header
         const credentials = auth(req);
+
         // If users credentials exist
         if (credentials) {
             // Attempt to get the user from the db
@@ -48,10 +50,10 @@ const auth = require('basic-auth');
             const users = await User.findAll()
             const user = users.find(user => user.emailAddress === credentials.name)
             if(user) {
-                // Use bcrypt compare the entered pw with the db pw
+                // Use bcrypt compare the entered password with the database password
                 const authenticated = bcryptjs.compareSync(credentials.pass, user.password);
 
-                // If the pws match then 
+                // If the passwords match 
                 if (authenticated) {
                     // store the the retrieved user object on the req object so the next middleware has access to it
                     req.currentUser = user;
@@ -76,8 +78,9 @@ const auth = require('basic-auth');
             next();
         }  
     });
-
-    // Route that returns the current authenticated user.
+    /**
+     * GET route returns the current authenticated user.
+     */
     router.get('/users', authenticateUser, handleAsync(async (req, res) => {
         const user = req.currentUser;
   
@@ -90,7 +93,7 @@ const auth = require('basic-auth');
     }));
 
    /**
-    * Post route to create a new User
+    * Post route to creates a new User
     */
    router.post('/users',
    [
@@ -115,7 +118,7 @@ const auth = require('basic-auth');
     const errors = validationResult(req)
 
     /**
-     * isEmpty returns true if there are no errors so to check if there are errors we use !(NOT operator)
+     * isEmpty() returns true if there are no errors so to check if there are errors we use !(NOT operator) 
      * If there are validation errors
      */
     if (!errors.isEmpty()) {
@@ -125,7 +128,7 @@ const auth = require('basic-auth');
         // return the error to the client
         return res.status(400).json({ errors: errorMessage})
     } else {
-        // Get user from the request body.
+        // Get the user from the request body.
         const user = req.body
         // Hash the new user's password.
         user.password = bcryptjs.hashSync(user.password);
@@ -134,8 +137,9 @@ const auth = require('basic-auth');
         res.status(201).location('/').end();
     }     
 }));
-
-//send a DELETE request to /user/:id to DELETE a user.
+/**
+ * DELETE route. Deletes a user
+*/
 router.delete("/users/:id", handleAsync( async(req, res, next) => {
     const user = await User.findByPk(req.params.id);
     if(user) {
@@ -148,12 +152,11 @@ router.delete("/users/:id", handleAsync( async(req, res, next) => {
     } else {
         res.status(404).json({message: "user not found"})
     }
-
 }));
 
-/**
- * Course Routing Below
- * 
+/************************
+ * Course Routing Below *
+ * **********************
  */
 
 
@@ -162,6 +165,7 @@ router.delete("/users/:id", handleAsync( async(req, res, next) => {
  */
 router.get('/courses', handleAsync(async (req, res) => {
 const courses = await Course.findAll({
+    // Set attributes I want to bring back from the database.
     attributes: ['id', 'title', 'description', "estimatedTime", "materialsNeeded"],
     include : [
         {
